@@ -439,43 +439,81 @@ dropdownView.bind( 'isEnabled' ).toMany( buttons, 'isEnabled',
 );
 ```
 
-### Dialogs
+### Dialogs and modals
 
-Dialog is composed of a button and a DialogView.
+Another UI component provided through the framework is the dialogs system. It consists of the **Dialog (controller) and DialogView (view),** similar to how {@link module:ui/panel/balloon/contextualballoon ContextualBalloon plugin} manages the {@link module:ui/panel/balloon/balloonpanelview~BalloonPanelView balloon panels}. A dialog is a popup window that does not close when the user clicks outside it. As long as it has a [header](#header), it is also draggable. Only one dialog can be open at a time - opening another one closes the previously visible window.
 
 #### Structure and behaviour
 
-DialogView has three parts, each of which is optional: header (which is used as a drag handler), content (the body of the dialog) and actions area (collection of buttons).
+DialogView has three parts, each of which is optional: the header (which is used as a drag handler), the content area (the body of the dialog) and the actions area (collection of buttons). The order of the parts can not be changed.
 
-Dialogs are accessible. Use cmd+f6 to switch focus between the editor and the open dialog. Press `esc` to close the dialog.
+##### Header
 
-You can disable `X` button and `esc` keystroke closing the dialog/modal. Remember to include at least one button that hides the dialog then.
+A header may consist of any combination of three elements: an icon, a title and a "Close" button. The code below shows how to create a header with all three of them.
+
+```js
+```
+
+##### Contents
+
+This part can be a single View or a collection of Views. They will be displayed directly inside a body of a dialog.
+
+##### Actions
+
+The last piece of the dialog is the actions area, where the buttons are displayed. Their behaviour can be fully customized using the `onCreate()` and `onExecute()` callbacks. Below you'll find an example of the configuration for the four custom buttons:
+* The "Ok" button that closes the dialog and has a custom CSS class set;
+* The "Set custom title" button that changes the dialog's title;
+* The "Drag detector" button that changes its state once the dialog was dragged by the user;
+* The "Cancel" button that closes the dialog.
+
+```js
+```
+
+#### Modals
+
+Modals are very similar to the dialogs - they share the same structure rules, API etc. The major difference is that while a modal is open, the user can not interact with the editor or the rest of the page - it is covered with a non-transparent overlay. It can be used e.g. to enforce user to take one of the specified actions.
+
+To create a modal, use the optional argument of the `Dialog#show()` method:
+
+```js
+```
+
+Always make sure there is a way for the user to close a modal - either via a "Close" button, <kbd>Esc</kbd> key or one of the action buttons.
+
+#### Accessibility
+
+Dialogs provide full keyboard accessiblity. While a dialog is open, press the <kbd>Ctrl</kbd>+<kbd>F6</kbd> combination to move the focus between the editor and the dialog. It can also be closed at any time by pressing the <kbd>Esc</kbd> key. To navigate through the dialog, use the <kbd>Tab</kbd> and <kbd>Shift</kbd>+<kbd>Tab</kbd> keystrokes. The contents of the dialog are also available for screen readers.
 
 #### API
 
-Dialogs are controlled by the `Dialog` plugin.
+The dialog's lifecycle (creating and destroying) is managed by the {@link ui/dialog/dialog Dialog plugin}. It provides two public methods: `show()` and `hide()`. Both of them fire the respective events (`show` and `hide`), so it's possible to hook after or before them.
 
-There are dialogs and modals which use the same API. Difference: users can't click outside the modal when it's open (they have to close it to interact with the rest of the page).
+##### `show()` method
 
-To dynamically change the button label, use either `onExecute` or `onCreate` callback.
+This method accepts a number of configuration options that allow to shape the structure and behaviour of the dialog.
 
-`show()` and `hide()` methods fire events, so you can hook onto them.
+##### `show:[id]` event
 
+When the `Dialog#show()` function is called and the `id` parameter was provided, the fired event will be namespaced, allowing to customise some of the default dialog's properties. For example, you can change the default position of the "Find and replace" dialog from the editor corner to the bottom with the following code:
+
+```js
+```
+
+##### `hide()` method
+
+Executing this method will hide (and destroy) the dialog and also call the `_onHide()` callback if it was provided in the respective `show()` method call.
+
+##### `hide:[id]` event
+
+Similarly to `show:[id]` event, also this one is namespaced as long as the dialog had a `id` property.
 
 #### Visibility and positioning
 
-Only one dialog can be visible at the same time. Opening another dialog (from the same or even another editor instance) will close the previous dialog.
+Only one dialog can be visible at the same time. Opening another dialog (from the same or another editor instance) will close the previous dialog.
 
-To change the default dialog positioning (e.g. display find and replace in the bottom), use the `show` event listener. Interacting with only the particular dialog can also be done this way, using the `show:id` listener.
+If not specified otherwise, the dialog will be displayed in the center of the editor's editing area and modals - in the center of the screen. Custom dialogs can have their position set to one of the preconfigured options (see **DialogViewPosition**). The relative positioning is disabled once the dialog is manually dragged by the user.
 
-If dialog does not have a specified position, it will be displayed at the screen center.
-
-Dialogs relative positioning is disabled once they are dragged by the user.
-
-
-
-
-
+To change the default dialog positioning, use the `show` event listener (see the example code there).
 
 ### Best practices
 

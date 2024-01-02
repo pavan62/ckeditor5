@@ -84,7 +84,8 @@ class ModalWithText extends Plugin {
 
 				dialog.show( {
 					isModal: true,
-					title: t( 'Modal with text' ),
+					title: t( 'Modal with text and without close button' ),
+					hasCloseButton: false,
 					content: textView,
 					actionButtons: [
 						{
@@ -201,7 +202,7 @@ function initEditor( editorName, editorClass, direction = 'ltr', customCallback?
 		],
 		toolbar: {
 			items: [
-				'heading', 'bold', 'italic', 'link',
+				'heading', 'bold', 'italic', 'link', 'sourceediting',
 				'-',
 				'findAndReplace', 'modalWithText', ...POSSIBLE_DIALOG_POSITIONS
 			],
