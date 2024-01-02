@@ -439,6 +439,44 @@ dropdownView.bind( 'isEnabled' ).toMany( buttons, 'isEnabled',
 );
 ```
 
+### Dialogs
+
+Dialog is composed of a button and a DialogView.
+
+#### Structure and behaviour
+
+DialogView has three parts, each of which is optional: header (which is used as a drag handler), content (the body of the dialog) and actions area (collection of buttons).
+
+Dialogs are accessible. Use cmd+f6 to switch focus between the editor and the open dialog. Press `esc` to close the dialog.
+
+You can disable `X` button and `esc` keystroke closing the dialog/modal. Remember to include at least one button that hides the dialog then.
+
+#### API
+
+Dialogs are controlled by the `Dialog` plugin.
+
+There are dialogs and modals which use the same API. Difference: users can't click outside the modal when it's open (they have to close it to interact with the rest of the page).
+
+To dynamically change the button label, use either `onExecute` or `onCreate` callback.
+
+`show()` and `hide()` methods fire events, so you can hook onto them.
+
+
+#### Visibility and positioning
+
+Only one dialog can be visible at the same time. Opening another dialog (from the same or even another editor instance) will close the previous dialog.
+
+To change the default dialog positioning (e.g. display find and replace in the bottom), use the `show` event listener. Interacting with only the particular dialog can also be done this way, using the `show:id` listener.
+
+If dialog does not have a specified position, it will be displayed at the screen center.
+
+Dialogs relative positioning is disabled once they are dragged by the user.
+
+
+
+
+
+
 ### Best practices
 
 It is advised that for the best user experience the editing view gets {@link module:engine/view/view~View#focus focused} upon any user action (like executing a command) to make sure the editor retains focus:
