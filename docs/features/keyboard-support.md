@@ -2,6 +2,7 @@
 category: features
 classes: keyboard-shortcuts
 meta-title: Keyboard support | CKEditor 5 Documentation
+modified_at: 2024-01-03
 ---
 
 # Keyboard support

@@ -3,6 +3,7 @@ category: framework-architecture
 meta-title: UI library | CKEditor 5 Framework Documentation
 order: 40
 toc-limit: 3
+modified_at: 2024-01-03
 ---
 
 # UI library
