@@ -2,6 +2,7 @@
 category: framework-architecture
 meta-title: UI library | CKEditor 5 Framework Documentation
 order: 40
+toc-limit: 3
 ---
 
 # UI library
@@ -441,32 +442,105 @@ dropdownView.bind( 'isEnabled' ).toMany( buttons, 'isEnabled',
 
 ### Dialogs and modals
 
-Another UI component provided through the framework is the dialogs system. It consists of the **Dialog (controller) and DialogView (view),** similar to how {@link module:ui/panel/balloon/contextualballoon ContextualBalloon plugin} manages the {@link module:ui/panel/balloon/balloonpanelview~BalloonPanelView balloon panels}. A dialog is a popup window that does not close when the user clicks outside it. As long as it has a [header](#header), it is also draggable. Only one dialog can be open at a time - opening another one closes the previously visible window.
+Another UI component provided through the framework is the dialogs system. It consists of the controller (the {@link module:ui/dialog/dialog `Dialog` plugin}) handling {@link module:ui/dialog/dialogview the dialog views}, similar to how the {@link module:ui/panel/balloon/contextualballoon `ContextualBalloon`} plugin manages the {@link module:ui/panel/balloon/balloonpanelview~BalloonPanelView balloon panels}.
+
+A dialog is a popup window that does not close when the user clicks outside it, so it allows to interact with the editor and its content while being open (unless it is a [modal](#modals), which blocks the interaction with the rest of the page until it is closed). As long as it has a [header](#header), it is also draggable. Only one dialog can be open at a time - opening another one closes the previously visible window.
+
+A minimal plugin creating a toolbar button component showing an empty dialog can look like this:
+
+```js
+import { Dialog, ButtonView } from '@ckeditor/ckeditor5-ui';
+
+class MyPluginWithDialog extends Plugin {
+	public static get requires() {
+		return [ Dialog ] as const;
+	}
+
+	public init(): void {
+		this.editor.ui.componentFactory.add( 'aiAssistant', locale => {
+			const button = new ButtonView( locale );
+
+			button.set( {
+				label: 'Show a dialog'
+			} );
+
+			this.listenTo( button, 'execute', () => {
+				const dialog = this.editor.plugins.get( 'Dialog' );
+
+				dialog.show( {} );
+			} );
+
+			return button;
+		} );
+	}
+}
+```
 
 #### Structure and behaviour
 
-DialogView has three parts, each of which is optional: the header (which is used as a drag handler), the content area (the body of the dialog) and the actions area (collection of buttons). The order of the parts can not be changed.
+A {@link module:ui/dialog/dialogview DialogView} has three parts, each of which is optional: the header (which is used as a drag handler), the contents (the body of the dialog) and the actions area (a collection of buttons). The order of the parts can not be changed.
 
 ##### Header
 
-A header may consist of any combination of three elements: an icon, a title and a "Close" button. The code below shows how to create a header with all three of them.
+A header may consist of any combination of three elements:
+
+* an icon;
+* a title;
+* a "Close" button.
+
+The "Close" button is added automatically as long as you provide an icon or a title. The code below shows how to create a header with an icon and a title, but without a "Close" button.
 
 ```js
+dialog.show( {
+	icon: pencilIcon,
+	title: 'My first dialog',
+	hasCloseButton: false
+} );
 ```
 
 ##### Contents
 
-This part can be a single View or a collection of Views. They will be displayed directly inside a body of a dialog.
+This part can be a single [view](#views) or a collection of views. They will be displayed directly inside a body of a dialog.
 
 ##### Actions
 
-The last piece of the dialog is the actions area, where the buttons are displayed. Their behaviour can be fully customized using the `onCreate()` and `onExecute()` callbacks. Below you'll find an example of the configuration for the four custom buttons:
+The last piece of the dialog is the actions area, where the buttons are displayed. Their behaviour can be fully customized using the `onCreate()` and `onExecute()` callbacks. Below you can find an example of the configuration for the four custom buttons:
+
 * The "Ok" button that closes the dialog and has a custom CSS class set;
 * The "Set custom title" button that changes the dialog's title;
 * The "Drag detector" button that changes its state once the dialog was dragged by the user;
 * The "Cancel" button that closes the dialog.
 
 ```js
+dialog.show( {
+	actionButtons: [
+		{
+			label: 'Ok',
+			class: 'ck-button-action',
+			withText: true,
+			onExecute: () => dialog.hide()
+		},
+		{
+			label: 'Set custom title',
+			withText: true,
+			onExecute: () => {
+				dialog.view!.headerView!.label = 'New title';
+			}
+		},
+		{
+			label: 'Drag detector'
+			withText: true,
+			onCreate: buttonView => {
+				buttonView.bind( 'isEnabled' ).to( dialog.view!, 'wasMoved', wasMoved => !wasMoved );
+			}
+		},
+		{
+			label: 'Cancel',
+			withText: true,
+			onExecute: () => dialog.hide()
+		}
+	]
+} );
 ```
 
 #### Modals
@@ -476,6 +550,9 @@ Modals are very similar to the dialogs - they share the same structure rules, AP
 To create a modal, use the optional argument of the `Dialog#show()` method:
 
 ```js
+dialog.show( {
+	isModal: true
+} );
 ```
 
 Always make sure there is a way for the user to close a modal - either via a "Close" button, <kbd>Esc</kbd> key or one of the action buttons.
