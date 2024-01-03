@@ -442,9 +442,9 @@ dropdownView.bind( 'isEnabled' ).toMany( buttons, 'isEnabled',
 
 ### Dialogs and modals
 
-Another UI component provided through the framework is the dialogs system. It consists of the controller (the {@link module:ui/dialog/dialog `Dialog` plugin}) handling {@link module:ui/dialog/dialogview the dialog views}, similar to how the {@link module:ui/panel/balloon/contextualballoon `ContextualBalloon`} plugin manages the {@link module:ui/panel/balloon/balloonpanelview~BalloonPanelView balloon panels}.
+Another UI component provided through the framework is the dialogs system. It consists of the controller (the {@link module:ui/dialog/dialog~Dialog `Dialog` plugin}) handling {@link module:ui/dialog/dialogview~DialogView the dialog views}, similar to how the {@link module:ui/panel/balloon/contextualballoon~ContextualBalloon `ContextualBalloon`} plugin manages the {@link module:ui/panel/balloon/balloonpanelview~BalloonPanelView balloon panels}.
 
-A dialog is a popup window that does not close when the user clicks outside it, so it allows to interact with the editor and its content while being open (unless it is a [modal](#modals), which blocks the interaction with the rest of the page until it is closed). As long as it has a [header](#header), it is also draggable. Only one dialog can be open at a time - opening another one closes the previously visible window.
+A dialog is a popup window that does not close when the user clicks outside it, so it allows to interact with the editor and its content while being open (unless it is a modal, which blocks the interaction with the rest of the page until it is closed). As long as it has a [header](#header), it is also draggable. Only one dialog can be open at a time - opening another one closes the previously visible window.
 
 A minimal plugin creating a toolbar button component showing an empty dialog can look like this:
 
@@ -476,9 +476,21 @@ class MyPluginWithDialog extends Plugin {
 }
 ```
 
+Modals are very similar to the dialogs - they share the same structure rules, API etc. The major difference is that while a modal is open, the user can not interact with the editor or the rest of the page - it is covered with a non-transparent overlay. It can be used e.g. to enforce user to take one of the specified actions.
+
+To create a modal, use the optional {@link module:ui/dialog/dialog~DialogDefinition#isModal `isModal`} argument of the {@link module:ui/dialog/dialog~Dialog#show `Dialog#show()`} method:
+
+```js
+dialog.show( {
+	isModal: true
+} );
+```
+
+Always make sure there is a way for the user to close a modal - either via a "Close" button, <kbd>Esc</kbd> key or one of the action buttons.
+
 #### Structure and behaviour
 
-A {@link module:ui/dialog/dialogview DialogView} has three parts, each of which is optional: the header (which is used as a drag handler), the contents (the body of the dialog) and the actions area (a collection of buttons). The order of the parts can not be changed.
+A {@link module:ui/dialog/dialogview~DialogView `DialogView`} can have three parts, each of which is optional: the header (which is used as a drag handler), the contents (the body of the dialog) and the actions area (a collection of buttons). The order of the parts can not be changed.
 
 ##### Header
 
@@ -543,27 +555,13 @@ dialog.show( {
 } );
 ```
 
-#### Modals
-
-Modals are very similar to the dialogs - they share the same structure rules, API etc. The major difference is that while a modal is open, the user can not interact with the editor or the rest of the page - it is covered with a non-transparent overlay. It can be used e.g. to enforce user to take one of the specified actions.
-
-To create a modal, use the optional argument of the `Dialog#show()` method:
-
-```js
-dialog.show( {
-	isModal: true
-} );
-```
-
-Always make sure there is a way for the user to close a modal - either via a "Close" button, <kbd>Esc</kbd> key or one of the action buttons.
-
 #### Accessibility
 
 Dialogs provide full keyboard accessiblity. While a dialog is open, press the <kbd>Ctrl</kbd>+<kbd>F6</kbd> combination to move the focus between the editor and the dialog. It can also be closed at any time by pressing the <kbd>Esc</kbd> key. To navigate through the dialog, use the <kbd>Tab</kbd> and <kbd>Shift</kbd>+<kbd>Tab</kbd> keystrokes. The contents of the dialog are also available for screen readers.
 
 #### API
 
-The dialog's lifecycle (creating and destroying) is managed by the {@link ui/dialog/dialog Dialog plugin}. It provides two public methods: `show()` and `hide()`. Both of them fire the respective events (`show` and `hide`), so it's possible to hook after or before them.
+The dialog's lifecycle (creating and destroying) is managed by the {@link module:ui/dialog/dialog Dialog plugin}. It provides two public methods: {@link module:ui/dialog/dialog~Dialog#show `show()`} and {@link module:ui/dialog/dialog~Dialog#hide `hide()`}. Both of them fire the respective events ({@link module:ui/dialog/dialog~DialogShowEvent `show`} and {@link module:ui/dialog/dialog~DialogHideEvent `hide`}), so it's possible to hook after or before them.
 
 ##### `show()` method
 
@@ -571,26 +569,29 @@ This method accepts a number of configuration options that allow to shape the st
 
 ##### `show:[id]` event
 
-When the `Dialog#show()` function is called and the `id` parameter was provided, the fired event will be namespaced, allowing to customise some of the default dialog's properties. For example, you can change the default position of the "Find and replace" dialog from the editor corner to the bottom with the following code:
+When the {@link module:ui/dialog/dialog~Dialog#show `Dialog#show()`} function is called and the {@link module:ui/dialog/dialog~DialogDefinition#id `id`} parameter was provided, the fired event will be namespaced, allowing to customise some of the default dialog's properties. For example, you can change the default position of the "Find and replace" dialog from the editor corner to the bottom with the following code:
 
 ```js
+dialog.on( 'show:findAndReplace', ( evt, data ) => {
+	return Object.assign( data, { position: DialogViewPosition.EDITOR_CENTER } );
+}, { priority: 'high' } );
 ```
 
 ##### `hide()` method
 
-Executing this method will hide (and destroy) the dialog and also call the `_onHide()` callback if it was provided in the respective `show()` method call.
+Executing this method will hide (and destroy) the dialog and also call the {@link module:ui/dialog/dialog~DialogDefinition#onHide `onHide()`} callback if it was provided in the respective {@link module:ui/dialog/dialog~Dialog#show `Dialog#show()`} method call.
 
 ##### `hide:[id]` event
 
-Similarly to `show:[id]` event, also this one is namespaced as long as the dialog had a `id` property.
+Similarly to [`show:[id]`](#showid-event) event, also this one is namespaced as long as the dialog had an {@link module:ui/dialog/dialog~DialogDefinition#id `id`} property.
 
 #### Visibility and positioning
 
 Only one dialog can be visible at the same time. Opening another dialog (from the same or another editor instance) will close the previous dialog.
 
-If not specified otherwise, the dialog will be displayed in the center of the editor's editing area and modals - in the center of the screen. Custom dialogs can have their position set to one of the preconfigured options (see **DialogViewPosition**). The relative positioning is disabled once the dialog is manually dragged by the user.
+If not specified otherwise, the dialog will be displayed in the center of the editor's editing area and modals - in the center of the screen. Custom dialogs can have their position set to one of the preconfigured options (see {@link module:ui/dialog/dialogview~DialogViewPosition}). The relative positioning is disabled once the dialog is manually dragged by the user.
 
-To change the default dialog positioning, use the `show` event listener (see the example code there).
+To change the default dialog positioning, use the {@link module:ui/dialog/dialog~DialogShowEvent `show`} event listener (see the [example code](#showid-event)).
 
 ### Best practices
 
