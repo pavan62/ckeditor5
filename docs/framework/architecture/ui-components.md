@@ -31,7 +31,7 @@ balloon.render();
 balloon.content.add( balloonButton );
 
 const positions = BalloonPanelView.defaultPositions;
-balloon.pin( { 
+balloon.pin( {
 	target: document.getElementById( 'balloon' ),
 	positions: [ positions.southArrowNorth ]
 } );
@@ -315,7 +315,7 @@ A dropdown consists of two elements: a button and a panel. The button expands th
 Inside a dropdown, you can put a list. To do so, you can use the {@link module:ui/dropdown/utils#addListToDropdown `addListToDropdown()`} helper function. Also, you must add items to a collection before putting them inside the dropdown.
 
 ```js
-import { 
+import {
 	addListToDropdown,
 	createDropdown,
 	Model
@@ -468,6 +468,205 @@ disabledDropdown.buttonView.set( {
 disabledDropdown.render();
 
 document.getElementById( 'dropdown-disabled' ).append( disabledDropdown.element );
+```
+
+## Dialog
+
+{@snippet framework/ui/ui-dialog}
+
+A dialog window is a draggable popup that can be displayed on top of the editor contents and remains open while user interacts with the editing area. You can use it to display any detached UI. You can create a dialog as an instance of the {@link module:ui/dialog/dialogview~DialogView `DialogView`} class.
+
+```js
+import { Locale } from '@ckeditor/ckeditor5-utils';
+import { ButtonView, DialogView, View } from '@ckeditor/ckeditor5-ui';
+
+const locale = new Locale();
+
+const dialogButton = new ButtonView();
+dialogButton.set( {
+	label: 'Show a dialog',
+	withText: true,
+	class: 'ck-button-action'
+} );
+dialogButton.render();
+
+let dialog;
+
+dialogButton.on( 'execute', () => {
+	if ( dialogButton.isOn ) {
+		hideDialog( dialog );
+
+		return;
+	}
+
+	dialogButton.isOn = true;
+
+	dialog = new DialogView( locale, {
+		getCurrentDomRoot: () => {},
+		getViewportOffset: () => {}
+	} );
+
+	dialog.render();
+
+	dialog.on( 'close', () => {
+		hideDialog( dialog );
+	} );
+
+	dialog.set( {
+		isVisible: true
+	} );
+
+	const textView = new View( locale );
+
+	textView.setTemplate( {
+		tag: 'div',
+		attributes: {
+			style: {
+				padding: 'var(--ck-spacing-large)',
+				whiteSpace: 'initial',
+				width: '100%',
+				maxWidth: '500px'
+			},
+			tabindex: -1
+		},
+		children: [
+			`Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+						dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
+						commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+						nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
+						anim id est laborum.`
+		]
+	} );
+
+	dialog.setupParts( {
+		title: 'Custom dialog',
+		content: textView,
+		actionButtons: [
+			{
+				label: 'Ok!',
+				class: 'ck-button-action',
+				withText: true,
+				onExecute: () => hideDialog( dialog )
+			}
+		]
+	} );
+
+	document.body.append( dialog.element );
+} );
+
+function hideDialog( dialog ) {
+	dialog.contentView.reset();
+	dialog.destroy();
+	document.body.removeChild( dialog.element );
+	dialogButton.isOn = false;
+}
+```
+
+There are a few configurable positions for the dialog display:
+
+* `SCREEN_CENTER`
+* `EDITOR_CENTER`
+* `EDITOR_TOP_SIDE`
+* `EDITOR_TOP_CENTER`
+* `EDITOR_BOTTOM_CENTER`
+* `EDITOR_ABOVE_CENTER`
+* `EDITOR_BELOW_CENTER`
+
+The first one is the only fixed position (meaning the dialog won't move during e.g. page scrolling). The rest is relative to the editor's editable area, so it will update dynamically. Dragging the dialog manually fixes its position, so it won't change until it is reopen.
+
+## Modal
+
+{@snippet framework/ui/ui-modal}
+
+Modal is a specific kind of a dialog window which while open, doesn't allow to interact with the editor content - it has to be closed first. It can be used to enforce the user interaction or interrupt them in some important situations. You can create a modal as an instance of the {@link module:ui/dialog/dialogview~DialogView `DialogView`} class with a property {@link module:ui/dialog/dialogview~DialogView#isModal `isModal`} set to `true`.
+
+```js
+import { Locale } from '@ckeditor/ckeditor5-utils';
+import { ButtonView, DialogView, View } from '@ckeditor/ckeditor5-ui';
+
+const locale = new Locale();
+
+const modalButton = new ButtonView();
+modalButton.set( {
+	label: 'Show a modal',
+	withText: true,
+	class: 'ck-button-action'
+} );
+modalButton.render();
+
+let modal;
+
+modalButton.on( 'execute', () => {
+	if ( modalButton.isOn ) {
+		hideModal( modal );
+
+		return;
+	}
+
+	modalButton.isOn = true;
+
+	modal = new DialogView( locale, {
+		getCurrentDomRoot: () => {},
+		getViewportOffset: () => {}
+	} );
+
+	modal.render();
+
+	modal.on( 'close', () => {
+		hideModal( modal );
+	} );
+
+	modal.set( {
+		isVisible: true,
+		isModal: true
+	} );
+
+	const textView = new View( locale );
+
+	textView.setTemplate( {
+		tag: 'div',
+		attributes: {
+			style: {
+				padding: 'var(--ck-spacing-large)',
+				whiteSpace: 'initial',
+				width: '100%',
+				maxWidth: '500px'
+			},
+			tabindex: -1
+		},
+		children: [
+			`Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
+						dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
+						commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+						nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
+						anim id est laborum.`
+		]
+	} );
+
+	modal.setupParts( {
+		title: 'Custom modal',
+		content: textView,
+		actionButtons: [
+			{
+				label: 'Ok!',
+				class: 'ck-button-action',
+				withText: true,
+				onExecute: () => hideModal( modal )
+			}
+		]
+	} );
+
+	document.body.append( modal.element );
+} );
+
+document.querySelector( '.ui-modal' ).append( modalButton.element );
+
+function hideModal( modal ) {
+	modal.contentView.reset();
+	modal.destroy();
+	document.body.removeChild( modal.element );
+	modalButton.isOn = false;
+}
 ```
 
 ## Icons

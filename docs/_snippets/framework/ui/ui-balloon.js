@@ -8,6 +8,7 @@
 import {
 	BalloonPanelView,
 	ButtonView,
+	DialogView,
 	IconView,
 	LabeledFieldView,
 	ListView,
@@ -39,6 +40,7 @@ import { Essentials } from '@ckeditor/ckeditor5-essentials';
 
 window.BalloonPanelView = BalloonPanelView;
 window.ButtonView = ButtonView;
+window.DialogView = DialogView;
 window.IconView = IconView;
 window.LabeledFieldView = LabeledFieldView;
 window.ListView = ListView;
