@@ -23,7 +23,7 @@ Use the find and replace toolbar button {@icon @ckeditor/ckeditor5-find-and-repl
 
 ### Configuring the UI type
 
-By default, find and replace form is displayed inside a dialog. That allows to keep it open all the time while editing the document in the meantime. It is however possible to use the dropdown instead. To do this, use the following configuration option:
+By default, the find and replace form is displayed inside a dialog. That allows for keeping it open while editing the document at the same time. It is still possible to use the feature in a dropdown. To do this, use the {@link module:find-and-replace/findandreplaceconfig~FindAndReplaceConfig `config.findAndReplace.uiType`} configuration option:
 
 ```js
 ClassicEditor
