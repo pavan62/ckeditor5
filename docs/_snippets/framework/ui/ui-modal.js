@@ -76,6 +76,7 @@ modalButton.on( 'execute', () => {
 			}
 		]
 	} );
+
 	document.body.append( modal.element );
 } );
 
