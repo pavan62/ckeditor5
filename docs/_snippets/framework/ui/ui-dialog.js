@@ -68,7 +68,7 @@ dialogButton.on( 'execute', () => {
 		content: textView,
 		actionButtons: [
 			{
-				label: 'Ok!',
+				label: 'OK',
 				class: 'ck-button-action',
 				withText: true,
 				onExecute: () => hideDialog( dialog )
