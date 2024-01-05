@@ -3,88 +3,91 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* globals Locale, ButtonView, DialogView, View, document */
+/* globals ButtonView, View, document, ClassicEditor, Essentials, Bold, Italic, Underline, Dialog, Paragraph, Plugin, console, window */
 
-const locale = new Locale();
-
-const modalButton = new ButtonView();
-modalButton.set( {
-	label: 'Show a modal',
-	withText: true,
-	class: 'ck-button-action'
-} );
-modalButton.render();
-
-let modal;
-
-modalButton.on( 'execute', () => {
-	if ( modalButton.isOn ) {
-		hideModal( modal );
-
-		return;
+class MinimalisticModal extends Plugin {
+	get requires() {
+		return [ Dialog ];
 	}
 
-	modalButton.isOn = true;
+	init() {
+		this.editor.ui.componentFactory.add( 'showModal', locale => {
+			const buttonView = new ButtonView( locale );
 
-	modal = new DialogView( locale, {
-		getCurrentDomRoot: () => {},
-		getViewportOffset: () => {}
-	} );
+			buttonView.set( {
+				label: 'Show a modal',
+				tooltip: true,
+				withText: true
+			} );
 
-	modal.render();
+			buttonView.on( 'execute', () => {
+				const dialog = this.editor.plugins.get( 'Dialog' );
 
-	modal.on( 'close', () => {
-		hideModal( modal );
-	} );
+				if ( buttonView.isOn ) {
+					dialog.hide();
+					buttonView.isOn = false;
 
-	modal.set( {
-		isVisible: true,
-		isModal: true
-	} );
+					return;
+				}
 
-	const textView = new View( locale );
+				buttonView.isOn = true;
 
-	textView.setTemplate( {
-		tag: 'div',
-		attributes: {
-			style: {
-				padding: 'var(--ck-spacing-large)',
-				whiteSpace: 'initial',
-				width: '100%',
-				maxWidth: '500px'
-			},
-			tabindex: -1
-		},
-		children: [
-			`Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-						dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-						commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-						nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
-						anim id est laborum.`
-		]
-	} );
+				const textView = new View( locale );
 
-	modal.setupParts( {
-		title: 'Custom modal',
-		content: textView,
-		actionButtons: [
-			{
-				label: 'OK',
-				class: 'ck-button-action',
-				withText: true,
-				onExecute: () => hideModal( modal )
-			}
-		]
-	} );
+				textView.setTemplate( {
+					tag: 'div',
+					attributes: {
+						style: {
+							padding: 'var(--ck-spacing-large)',
+							whiteSpace: 'initial',
+							width: '100%',
+							maxWidth: '500px'
+						},
+						tabindex: -1
+					},
+					children: [
+						'This is an exemplary content of the modal.',
+						'You can put here text, images, inputs, buttons, etc.'
+					]
+				} );
 
-	document.body.append( modal.element );
-} );
+				dialog.show( {
+					content: textView,
+					title: 'Modal with text',
+					isModal: true,
+					actionButtons: [
+						{
+							label: 'OK',
+							class: 'ck-button-action',
+							withText: true,
+							onExecute: () => dialog.hide()
+						}
+					],
+					onHide() { buttonView.isOn = false; }
+				} );
+			} );
 
-document.querySelector( '.ui-modal' ).append( modalButton.element );
-
-function hideModal( modal ) {
-	modal.contentView.reset();
-	modal.destroy();
-	document.body.removeChild( modal.element );
-	modalButton.isOn = false;
+			return buttonView;
+		} );
+	}
 }
+
+ClassicEditor
+	.create( document.querySelector( '#ui-modal-editor' ), {
+		plugins: [ Essentials, Paragraph, Bold, Italic, Underline, MinimalisticModal, Dialog ],
+		toolbar: [ 'bold', 'italic', 'underline', '|', 'showModal' ]
+	} )
+	.then( editor => {
+		window.attachTourBalloon( {
+			target: window.findToolbarItem( editor.ui.view.toolbar,
+				item => item.label === 'Show a modal' ),
+			text: 'Click here to display a modal.',
+			editor,
+			tippyOptions: {
+				placement: 'bottom-start'
+			}
+		} );
+	} )
+	.catch( error => {
+		console.error( error.stack );
+	} );

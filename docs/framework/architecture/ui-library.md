@@ -443,7 +443,7 @@ dropdownView.bind( 'isEnabled' ).toMany( buttons, 'isEnabled',
 
 ### Dialogs and modals
 
-Another UI component provided by the framework is a dialog. The dialog system in CKEditor 5 is brought by the {@link module:ui/dialog/dialog~Dialog `Dialog` plugin} that offers API for displaying [views](#views) in dialogs. In a sense, this plugin corresponds to another that manages views in balloons (popovers) across the UI ({@link module:ui/panel/balloon/contextualballoon~ContextualBalloon `ContextualBalloon` plugin}).
+Another UI component provided by the framework is a dialog. The dialog system in CKEditor 5 is brought by the {@link module:ui/dialog/dialog~Dialog `Dialog` plugin} that offers API for displaying [views](#views) in dialogs. In a sense, this plugin corresponds to another one that manages views in balloons (popovers) across the UI ({@link module:ui/panel/balloon/contextualballoon~ContextualBalloon `ContextualBalloon` plugin}).
 
 Dialog is a popup window that does not close when the user clicks outside of it. It allows for interacting with the editor and its content while being open (unless it is a modal, which blocks the interaction with the rest of the page until it is closed). When configured to display a [header](#header), a dialog is also {@link module:ui/bindings/draggableviewmixin~DraggableViewMixin draggable} using mouse or touch. Only one dialog can be open at a time - opening another one closes the previously visible one.
 

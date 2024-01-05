@@ -3,87 +3,90 @@
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* globals Locale, ButtonView, DialogView, View, document */
+/* globals ButtonView, View, document, ClassicEditor, Essentials, Bold, Italic, Underline, Dialog, Paragraph, Plugin, console, window */
 
-const locale = new Locale();
-
-const dialogButton = new ButtonView();
-dialogButton.set( {
-	label: 'Show a dialog',
-	withText: true,
-	class: 'ck-button-action'
-} );
-dialogButton.render();
-
-let dialog;
-
-dialogButton.on( 'execute', () => {
-	if ( dialogButton.isOn ) {
-		hideDialog( dialog );
-
-		return;
+class MinimalisticDialog extends Plugin {
+	get requires() {
+		return [ Dialog ];
 	}
 
-	dialogButton.isOn = true;
+	init() {
+		this.editor.ui.componentFactory.add( 'showDialog', locale => {
+			const buttonView = new ButtonView( locale );
 
-	dialog = new DialogView( locale, {
-		getCurrentDomRoot: () => {},
-		getViewportOffset: () => {}
-	} );
+			buttonView.set( {
+				label: 'Show a dialog',
+				tooltip: true,
+				withText: true
+			} );
 
-	dialog.render();
+			buttonView.on( 'execute', () => {
+				const dialog = this.editor.plugins.get( 'Dialog' );
 
-	dialog.on( 'close', () => {
-		hideDialog( dialog );
-	} );
+				if ( buttonView.isOn ) {
+					dialog.hide();
+					buttonView.isOn = false;
 
-	dialog.set( {
-		isVisible: true
-	} );
+					return;
+				}
 
-	const textView = new View( locale );
+				buttonView.isOn = true;
 
-	textView.setTemplate( {
-		tag: 'div',
-		attributes: {
-			style: {
-				padding: 'var(--ck-spacing-large)',
-				whiteSpace: 'initial',
-				width: '100%',
-				maxWidth: '500px'
-			},
-			tabindex: -1
-		},
-		children: [
-			`Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-						dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-						commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-						nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
-						anim id est laborum.`
-		]
-	} );
+				const textView = new View( locale );
 
-	dialog.setupParts( {
-		title: 'Custom dialog',
-		content: textView,
-		actionButtons: [
-			{
-				label: 'OK',
-				class: 'ck-button-action',
-				withText: true,
-				onExecute: () => hideDialog( dialog )
-			}
-		]
-	} );
+				textView.setTemplate( {
+					tag: 'div',
+					attributes: {
+						style: {
+							padding: 'var(--ck-spacing-large)',
+							whiteSpace: 'initial',
+							width: '100%',
+							maxWidth: '500px'
+						},
+						tabindex: -1
+					},
+					children: [
+						'This is an exemplary content of the dialog.',
+						'You can put here text, images, inputs, buttons, etc.'
+					]
+				} );
 
-	document.body.append( dialog.element );
-} );
+				dialog.show( {
+					content: textView,
+					title: 'Dialog with text',
+					actionButtons: [
+						{
+							label: 'OK',
+							class: 'ck-button-action',
+							withText: true,
+							onExecute: () => dialog.hide()
+						}
+					],
+					onHide() { buttonView.isOn = false; }
+				} );
+			} );
 
-document.querySelector( '.ui-dialog' ).append( dialogButton.element );
-
-function hideDialog( dialog ) {
-	dialog.contentView.reset();
-	dialog.destroy();
-	document.body.removeChild( dialog.element );
-	dialogButton.isOn = false;
+			return buttonView;
+		} );
+	}
 }
+
+ClassicEditor
+	.create( document.querySelector( '#ui-dialog-editor' ), {
+		plugins: [ Essentials, Paragraph, Bold, Italic, Underline, MinimalisticDialog, Dialog ],
+		toolbar: [ 'bold', 'italic', 'underline', '|', 'showDialog' ]
+	} )
+	.then( editor => {
+		window.attachTourBalloon( {
+			target: window.findToolbarItem( editor.ui.view.toolbar,
+				item => item.label === 'Show a dialog' ),
+			text: 'Click here to display a dialog.',
+			editor,
+			tippyOptions: {
+				placement: 'bottom-start'
+			}
+		} );
+	} )
+	.catch( error => {
+		console.error( error.stack );
+	} );
