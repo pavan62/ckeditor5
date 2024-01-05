@@ -477,89 +477,91 @@ document.getElementById( 'dropdown-disabled' ).append( disabledDropdown.element 
 A dialog window is a draggable popup that can be displayed on top of the editor contents and remains open while user interacts with the editing area. You can use it to display any detached UI. You can create a dialog as an instance of the {@link module:ui/dialog/dialogview~DialogView `DialogView`} class.
 
 ```js
-import { Locale } from '@ckeditor/ckeditor5-utils';
-import { ButtonView, DialogView, View } from '@ckeditor/ckeditor5-ui';
+import {
+	ButtonView,
+	Dialog,
+	View
+} from '@ckeditor/ckeditor5-ui';
+import { Plugin } from '@ckeditor/ckeditor5-core';
+import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
+import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
+import { Essentials } from '@ckeditor/ckeditor5-essentials';
+import { Bold, Italic } from '@ckeditor/ckeditor5-basic-styles';
 
-const locale = new Locale();
-
-const dialogButton = new ButtonView();
-dialogButton.set( {
-	label: 'Show a dialog',
-	withText: true,
-	class: 'ck-button-action'
-} );
-dialogButton.render();
-
-let dialog;
-
-dialogButton.on( 'execute', () => {
-	if ( dialogButton.isOn ) {
-		hideDialog( dialog );
-
-		return;
+class MinimalisticDialog extends Plugin {
+	get requires() {
+		return [ Dialog ];
 	}
 
-	dialogButton.isOn = true;
+	init() {
+		this.editor.ui.componentFactory.add( 'showDialog', locale => {
+			const buttonView = new ButtonView( locale );
 
-	dialog = new DialogView( locale, {
-		getCurrentDomRoot: () => {},
-		getViewportOffset: () => {}
-	} );
+			buttonView.set( {
+				label: 'Show a dialog',
+				tooltip: true,
+				withText: true
+			} );
 
-	dialog.render();
+			buttonView.on( 'execute', () => {
+				const dialog = this.editor.plugins.get( 'Dialog' );
 
-	dialog.on( 'close', () => {
-		hideDialog( dialog );
-	} );
+				if ( buttonView.isOn ) {
+					dialog.hide();
+					buttonView.isOn = false;
 
-	dialog.set( {
-		isVisible: true
-	} );
+					return;
+				}
 
-	const textView = new View( locale );
+				buttonView.isOn = true;
 
-	textView.setTemplate( {
-		tag: 'div',
-		attributes: {
-			style: {
-				padding: 'var(--ck-spacing-large)',
-				whiteSpace: 'initial',
-				width: '100%',
-				maxWidth: '500px'
-			},
-			tabindex: -1
-		},
-		children: [
-			`Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-						dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-						commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-						nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
-						anim id est laborum.`
-		]
-	} );
+				const textView = new View( locale );
 
-	dialog.setupParts( {
-		title: 'Custom dialog',
-		content: textView,
-		actionButtons: [
-			{
-				label: 'OK',
-				class: 'ck-button-action',
-				withText: true,
-				onExecute: () => hideDialog( dialog )
-			}
-		]
-	} );
+				textView.setTemplate( {
+					tag: 'div',
+					attributes: {
+						style: {
+							padding: 'var(--ck-spacing-large)',
+							whiteSpace: 'initial',
+							width: '100%',
+							maxWidth: '500px'
+						},
+						tabindex: -1
+					},
+					children: [
+						'This is an exemplary content of the dialog.',
+						'You can put here text, images, inputs, buttons, etc.'
+					]
+				} );
 
-	document.body.append( dialog.element );
-} );
+				dialog.show( {
+					title: 'Dialog with text',
+					content: textView,
+					actionButtons: [
+						{
+							label: 'OK',
+							class: 'ck-button-action',
+							withText: true,
+							onExecute: () => dialog.hide()
+						}
+					],
+					onHide() { buttonView.isOn = false; }
+				} );
+			} );
 
-function hideDialog( dialog ) {
-	dialog.contentView.reset();
-	dialog.destroy();
-	document.body.removeChild( dialog.element );
-	dialogButton.isOn = false;
+			return buttonView;
+		} );
+	}
 }
+
+ClassicEditor
+	.create( document.querySelector( '#editor' ), {
+		plugins: [ Essentials, Paragraph, Bold, Italic, MinimalisticDialog, Dialog ],
+		toolbar: [ 'bold', 'italic', '|', 'showDialog' ]
+	} )
+	.catch( error => {
+		console.error( error.stack );
+	} );
 ```
 
 There are a few configurable positions for the dialog display:
@@ -581,92 +583,92 @@ The first one is the only fixed position (meaning the dialog won't move during e
 Modal is a specific kind of a dialog window which while open, doesn't allow to interact with the editor content - it has to be closed first. It can be used to enforce the user interaction or interrupt them in some important situations. You can create a modal as an instance of the {@link module:ui/dialog/dialogview~DialogView `DialogView`} class with a property {@link module:ui/dialog/dialogview~DialogView#isModal `isModal`} set to `true`.
 
 ```js
-import { Locale } from '@ckeditor/ckeditor5-utils';
-import { ButtonView, DialogView, View } from '@ckeditor/ckeditor5-ui';
+import {
+	ButtonView,
+	Dialog,
+	View
+} from '@ckeditor/ckeditor5-ui';
+import { Plugin } from '@ckeditor/ckeditor5-core';
+import { ClassicEditor } from '@ckeditor/ckeditor5-editor-classic';
+import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
+import { Essentials } from '@ckeditor/ckeditor5-essentials';
+import { Bold, Italic } from '@ckeditor/ckeditor5-basic-styles';
 
-const locale = new Locale();
-
-const modalButton = new ButtonView();
-modalButton.set( {
-	label: 'Show a modal',
-	withText: true,
-	class: 'ck-button-action'
-} );
-modalButton.render();
-
-let modal;
-
-modalButton.on( 'execute', () => {
-	if ( modalButton.isOn ) {
-		hideModal( modal );
-
-		return;
+class MinimalisticModal extends Plugin {
+	get requires() {
+		return [ Dialog ];
 	}
 
-	modalButton.isOn = true;
+	init() {
+		this.editor.ui.componentFactory.add( 'showModal', locale => {
+			const buttonView = new ButtonView( locale );
 
-	modal = new DialogView( locale, {
-		getCurrentDomRoot: () => {},
-		getViewportOffset: () => {}
-	} );
+			buttonView.set( {
+				label: 'Show a modal',
+				tooltip: true,
+				withText: true
+			} );
 
-	modal.render();
+			buttonView.on( 'execute', () => {
+				const dialog = this.editor.plugins.get( 'Dialog' );
 
-	modal.on( 'close', () => {
-		hideModal( modal );
-	} );
+				if ( buttonView.isOn ) {
+					dialog.hide();
+					buttonView.isOn = false;
 
-	modal.set( {
-		isVisible: true,
-		isModal: true
-	} );
+					return;
+				}
 
-	const textView = new View( locale );
+				buttonView.isOn = true;
 
-	textView.setTemplate( {
-		tag: 'div',
-		attributes: {
-			style: {
-				padding: 'var(--ck-spacing-large)',
-				whiteSpace: 'initial',
-				width: '100%',
-				maxWidth: '500px'
-			},
-			tabindex: -1
-		},
-		children: [
-			`Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-						dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex
-						commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
-						nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
-						anim id est laborum.`
-		]
-	} );
+				const textView = new View( locale );
 
-	modal.setupParts( {
-		title: 'Custom modal',
-		content: textView,
-		actionButtons: [
-			{
-				label: 'OK',
-				class: 'ck-button-action',
-				withText: true,
-				onExecute: () => hideModal( modal )
-			}
-		]
-	} );
+				textView.setTemplate( {
+					tag: 'div',
+					attributes: {
+						style: {
+							padding: 'var(--ck-spacing-large)',
+							whiteSpace: 'initial',
+							width: '100%',
+							maxWidth: '500px'
+						},
+						tabindex: -1
+					},
+					children: [
+						'This is an exemplary content of the modal.',
+						'You can put here text, images, inputs, buttons, etc.'
+					]
+				} );
 
-	document.body.append( modal.element );
-} );
+				dialog.show( {
+					isModal: true,
+					title: 'Modal with text',
+					content: textView,
+					actionButtons: [
+						{
+							label: 'OK',
+							class: 'ck-button-action',
+							withText: true,
+							onExecute: () => dialog.hide()
+						}
+					],
+					onHide() { buttonView.isOn = false; }
+				} );
+			} );
 
-document.querySelector( '.ui-modal' ).append( modalButton.element );
-
-function hideModal( modal ) {
-	modal.contentView.reset();
-	modal.destroy();
-	document.body.removeChild( modal.element );
-	modalButton.isOn = false;
+			return buttonView;
+		} );
+	}
 }
+
+ClassicEditor
+	.create( document.querySelector( '#editor' ), {
+		plugins: [ Essentials, Paragraph, Bold, Italic, MinimalisticDialog, Dialog ],
+		toolbar: [ 'bold', 'italic', '|', 'showModal' ]
+	} )
+	.catch( error => {
+		console.error( error.stack );
+	} );
 ```
 
 ## Icons

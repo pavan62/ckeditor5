@@ -52,8 +52,8 @@ class MinimalisticDialog extends Plugin {
 				} );
 
 				dialog.show( {
-					content: textView,
 					title: 'Dialog with text',
+					content: textView,
 					actionButtons: [
 						{
 							label: 'OK',

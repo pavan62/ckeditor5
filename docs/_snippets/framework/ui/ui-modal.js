@@ -52,9 +52,9 @@ class MinimalisticModal extends Plugin {
 				} );
 
 				dialog.show( {
-					content: textView,
-					title: 'Modal with text',
 					isModal: true,
+					title: 'Modal with text',
+					content: textView,
 					actionButtons: [
 						{
 							label: 'OK',
