@@ -38,7 +38,7 @@ ClassicEditor
 		}
 	} )
 	.then( editor => {
-		window.editor = editor;
+		window.editorWithDropdown = editor;
 
 		window.attachTourBalloon( {
 			target: window.findToolbarItem( editor.ui.view.toolbar,
