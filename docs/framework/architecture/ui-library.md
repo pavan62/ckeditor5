@@ -447,37 +447,7 @@ Another UI component provided by the framework is a dialog. The dialog system in
 
 Dialog is a popup window that does not close when the user clicks outside of it. It allows for interacting with the editor and its content while being open (unless it is a modal, which blocks the interaction with the rest of the page until it is closed). When configured to display a [header](#header), a dialog is also {@link module:ui/bindings/draggableviewmixin~DraggableViewMixin draggable} using mouse or touch. Only one dialog can be open at a time - opening another one closes the previously visible one.
 
-A minimal plugin creating a toolbar button component showing an empty dialog can look like this:
-
-```js
-import { Dialog, ButtonView } from '@ckeditor/ckeditor5-ui';
-
-class MyPluginWithDialog extends Plugin {
-	public static get requires() {
-		return [ Dialog ] as const;
-	}
-
-	public init(): void {
-		this.editor.ui.componentFactory.add( 'aiAssistant', locale => {
-			const button = new ButtonView( locale );
-
-			button.set( {
-				label: 'Show a dialog'
-			} );
-
-			this.listenTo( button, 'execute', () => {
-				const dialog = this.editor.plugins.get( 'Dialog' );
-
-				dialog.show( {
-					// The dialog definition can be defined here.
-				} );
-			} );
-
-			return button;
-		} );
-	}
-}
-```
+See how to implement a simple {@link installation/plugins/plugins plugin} toggling the visibility of a {@link framework/architecture/ui-components#dialog dialog} or {@link framework/architecture/ui-components#modal modal} or check the details about their [structure](#structure-and-behaviour).
 
 Modals are similar to the dialogs - they share the same structure rules, API etc. The major difference is that while a modal is open, the user can not interact with the editor or the rest of the page - it is covered with a non-transparent overlay. It can be used e.g. to enforce user to take one of the specified actions.
 
@@ -524,7 +494,34 @@ dialog.show( {
 
 ##### Content
 
-This part can be a single [view](#views) or a collection of views. They will be displayed directly inside a body of a dialog.
+This part can be a single [view](#views) or a collection of views. They will be displayed directly inside a body of a dialog. You can find an example of how to insert a block of text into the dialog.
+
+```js
+const textView = new View( locale );
+
+textView.setTemplate( {
+	tag: 'div',
+	attributes: {
+		style: {
+			padding: 'var(--ck-spacing-large)',
+			whiteSpace: 'initial',
+			width: '100%',
+			maxWidth: '500px'
+		},
+		tabindex: -1
+	},
+	children: [
+		'This is an exemplary content of the dialog.',
+		'You can put here text, images, inputs, buttons, etc.'
+	]
+} );
+
+dialog.show( {
+	title: 'Info dialog with text',
+	content: textView,
+	// The rest of the dialog definition...
+} );
+```
 
 ##### Action buttons
 
@@ -577,7 +574,7 @@ The dialog's lifecycle (creating and destroying) is managed by the {@link module
 
 ##### `show()` method
 
-This method accepts a number of configuration options that allow to shape the structure and behavior of the dialog.
+This method accepts a number of configuration options that allow to shape the structure and behavior of the dialog. See the {@link module:ui/dialog/dialog~DialogDefinition `DialogDefinition`} API docs to check all the possibilities.
 
 ##### `show:[id]` event
 
