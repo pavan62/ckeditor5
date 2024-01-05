@@ -313,7 +313,7 @@ export interface DialogDefinition {
 	 * Available dialog positions. By default `DialogViewPosition.EDITOR_CENTER` is used for {@link #isModal non-modals}
 	 * and `DialogViewPosition.SCREEN_CENTER` for modals.
 	 *
-	 * {@link module:ui/dialog/dialogview~DialogViewPosition Learn more}.
+	 * {@link module:ui/dialog/dialogview#constant-DialogViewPosition Learn more}.
 	 */
 	position?: typeof DialogViewPosition[ keyof typeof DialogViewPosition ];
 
